@@ -1,0 +1,15 @@
+- generic [ref=e4]:
+  - generic [ref=e5]: eSIM OPERATIONS
+  - heading "设备与短信测试台" [level=1] [ref=e6]
+  - paragraph [ref=e7]: 识别 EC20、整理号池，并在开始测试前看清每个号码
+  - generic [ref=e8]:
+    - generic [ref=e9]: 用户名
+    - textbox "用户名" [active] [ref=e14]
+  - generic [ref=e15]:
+    - generic [ref=e16]: 密码
+    - generic [ref=e17]:
+      - textbox "密码" [ref=e21]
+      - button "显示密码" [ref=e22] [cursor=pointer]
+  - button "登录" [ref=e26] [cursor=pointer]
+  - button "进入离线演示" [ref=e29] [cursor=pointer]
+  - generic [ref=e30]: VoCat 在线时读取实时设备；远程关闭时可用本地缓存继续体验，不会发送真实短信

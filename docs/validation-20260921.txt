@@ -1,0 +1,18 @@
+test_ack_to_foreign_task_is_an_integrity_error (test_reporting.ReportingTests.test_ack_to_foreign_task_is_an_integrity_error) ... ok
+test_catalog_preserves_all_source_cases_and_matrix_order (test_reporting.ReportingTests.test_catalog_preserves_all_source_cases_and_matrix_order) ... ok
+test_existing_probes_are_observations_not_t_case_passes (test_reporting.ReportingTests.test_existing_probes_are_observations_not_t_case_passes) ... ok
+test_expected_rejection_counts_as_pass_not_failure (test_reporting.ReportingTests.test_expected_rejection_counts_as_pass_not_failure) ... ok
+test_failure_matrix_uses_real_error_code (test_reporting.ReportingTests.test_failure_matrix_uses_real_error_code) ... ok
+test_failure_without_node_code_does_not_invent_matrix_code (test_reporting.ReportingTests.test_failure_without_node_code_does_not_invent_matrix_code) ... ok
+test_missing_or_unmatched_evidence_cannot_pass (test_reporting.ReportingTests.test_missing_or_unmatched_evidence_cannot_pass) ... ok
+test_offline_report_has_exact_tables_without_historical_promotion (test_reporting.ReportingTests.test_offline_report_has_exact_tables_without_historical_promotion) ... ok
+test_success_is_linked_to_one_action_only (test_reporting.ReportingTests.test_success_is_linked_to_one_action_only) ... ok
+test_synthetic_history_wrong_batch_or_environment_cannot_enter_report (test_reporting.ReportingTests.test_synthetic_history_wrong_batch_or_environment_cannot_enter_report) ... ok
+test_tampered_summary_is_rejected (test_reporting.ReportingTests.test_tampered_summary_is_rejected) ... ok
+test_template_and_source_matrix_agree (test_reporting.ReportingTests.test_template_and_source_matrix_agree) ... ok
+test_unknown_action_is_not_falsely_attributed_to_known_action (test_reporting.ReportingTests.test_unknown_action_is_not_falsely_attributed_to_known_action) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.034s
+
+OK

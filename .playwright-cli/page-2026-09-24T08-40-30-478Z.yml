@@ -1,0 +1,292 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e31]:
+    - complementary [ref=f1e32]:
+      - generic [ref=f1e33]: eSIM 设备测试台
+      - navigation [ref=f1e34]:
+        - link "总览" [ref=f1e35] [cursor=pointer]:
+          - /url: "#/overview"
+        - link "开始测试" [ref=f1e42] [cursor=pointer]:
+          - /url: "#/run"
+        - link "IMEI识别" [ref=f1e46] [cursor=pointer]:
+          - /url: "#/imei"
+        - link "测试记录" [ref=f1e52] [cursor=pointer]:
+          - /url: "#/records"
+        - link "号码列表" [ref=f1e58] [cursor=pointer]:
+          - /url: "#/numbers"
+        - link "系统设置" [ref=f1e62] [cursor=pointer]:
+          - /url: "#/settings"
+      - generic [ref=f1e67]:
+        - generic [ref=f1e72]:
+          - generic [ref=f1e73]: 离线演示
+          - text: Administrator
+        - button "退出登录" [ref=f1e74] [cursor=pointer]
+    - generic [ref=f1e78]:
+      - banner [ref=f1e79]:
+        - generic [ref=f1e80]: IMEI识别
+        - generic [ref=f1e81]: 离线演示 · 本地缓存
+        - generic [ref=f1e84]: v0.4 设备识别与测试台
+      - main [ref=f1e85]:
+        - generic [ref=f1e775]:
+          - generic [ref=f1e776]:
+            - heading "IMEI 设备识别" [level=1] [ref=f1e777]
+            - paragraph [ref=f1e778]: 从 VoCat 读取 EC20 设备及其 IMEI，按完整 IMEI 的 TAC 识别厂商和型号
+          - button "刷新 VoCat" [ref=f1e780] [cursor=pointer]
+        - generic [ref=f1e786]:
+          - generic [ref=f1e787]: 最近缓存
+          - generic [ref=f1e791]: 当前为离线演示，显示最近一次 VoCat 快照。
+          - generic [ref=f1e792]: 读取时间 2026-09-24 10:22:28
+        - generic [ref=f1e793]:
+          - generic [ref=f1e794]:
+            - text: 手动 IMEI 查询
+            - generic [ref=f1e795]: 不依赖 VoCat 设备选择，直接查询 IMEI 数据源
+          - generic [ref=f1e796]:
+            - generic [ref=f1e797]:
+              - generic [ref=f1e798]: 输入完整 IMEI
+              - generic [ref=f1e799]:
+                - textbox "输入完整 IMEI" [ref=f1e800]:
+                  - /placeholder: 例如 490154203237518
+                - button "查询" [ref=f1e801] [cursor=pointer]
+              - generic [ref=f1e805]: 请输入 15 位数字 IMEI；查询只读取本地 TAC 数据源，不会修改 VoCat 设备。
+            - generic [ref=f1e806]:
+              - generic [ref=f1e807]: 查询结果
+              - generic [ref=f1e808]: 输入完整 IMEI 后，右侧会显示 TAC、厂商、型号和设备类型。
+        - generic [ref=f1e809]:
+          - generic [ref=f1e810]:
+            - text: 批量 IMEI 查询
+            - generic [ref=f1e811]: 每行一个 IMEI，单次最多 500 个
+          - generic [ref=f1e812]:
+            - generic [ref=f1e813]:
+              - generic [ref=f1e814]: 批量输入
+              - textbox "批量输入" [ref=f1e815]:
+                - /placeholder: 每行输入一个完整 IMEI
+                - text: 490154203237518 490154203237519 123
+              - generic [ref=f1e816]: 支持换行、空格、逗号或分号分隔；重复和无效输入会逐条显示。点击保存后，记录在刷新或重启后仍可查看。
+              - button "批量查询" [ref=f1e817] [cursor=pointer]
+            - generic [ref=f1e821]:
+              - generic [ref=f1e822]:
+                - generic [ref=f1e823]: 共 3 条
+                - generic [ref=f1e824]: 已识别 1 条
+                - generic [ref=f1e825]: 无效 2 条
+                - button "保存全部结果" [ref=f1e826] [cursor=pointer]
+              - table [ref=f1e828]:
+                - rowgroup [ref=f1e829]:
+                  - row [ref=f1e830]:
+                    - columnheader "#" [ref=f1e831]
+                    - columnheader "IMEI" [ref=f1e832]
+                    - columnheader "状态" [ref=f1e833]
+                    - columnheader "TAC" [ref=f1e834]
+                    - columnheader "厂商" [ref=f1e835]
+                    - columnheader "型号" [ref=f1e836]
+                    - columnheader "设备类型" [ref=f1e837]
+                - rowgroup [ref=f1e838]:
+                  - row [ref=f1e839]:
+                    - cell "1" [ref=f1e840]
+                    - cell "490154203237518" [ref=f1e841]
+                    - cell "已识别" [ref=f1e842]
+                    - cell "49015420" [ref=f1e844]
+                    - cell "Nokia" [ref=f1e845]
+                    - cell "Nokia 3110" [ref=f1e846]
+                    - cell "数据源未提供" [ref=f1e847]
+                  - row [ref=f1e848]:
+                    - cell "2" [ref=f1e849]
+                    - cell "490154203237519" [ref=f1e850]
+                    - cell "IMEI 无效" [ref=f1e851]
+                    - cell "49015420" [ref=f1e853]
+                    - cell "—" [ref=f1e854]
+                    - cell "—" [ref=f1e855]
+                    - cell "数据源未提供" [ref=f1e856]
+                  - row [ref=f1e857]:
+                    - cell "3" [ref=f1e858]
+                    - cell "123" [ref=f1e859]
+                    - cell "IMEI 无效" [ref=f1e860]
+                    - cell "—" [ref=f1e862]
+                    - cell "—" [ref=f1e863]
+                    - cell "—" [ref=f1e864]
+                    - cell "数据源未提供" [ref=f1e865]
+        - generic [ref=f1e866]:
+          - generic [ref=f1e867]:
+            - text: 已保存的 IMEI 记录
+            - generic [ref=f1e868]: 6 条 · 相同 IMEI 不重复保存
+            - button "刷新" [ref=f1e869] [cursor=pointer]
+          - table [ref=f1e871]:
+            - rowgroup [ref=f1e872]:
+              - row [ref=f1e873]:
+                - columnheader "IMEI" [ref=f1e874]
+                - columnheader "TAC" [ref=f1e875]
+                - columnheader "状态" [ref=f1e876]
+                - columnheader "厂商" [ref=f1e877]
+                - columnheader "型号" [ref=f1e878]
+                - columnheader "保存时间" [ref=f1e879]
+                - columnheader "操作" [ref=f1e880]
+            - rowgroup [ref=f1e881]:
+              - row [ref=f1e882]:
+                - cell "353142070965663" [ref=f1e883]
+                - cell "35314207" [ref=f1e884]
+                - cell "已识别" [ref=f1e885]
+                - cell "POSITIVO" [ref=f1e887]
+                - cell "POSITIVO, POSITIVO QUANTUM GO 4G 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e888]:
+                  - text: POSITIVO, POSITIVO QUANTUM GO 4G
+                  - generic [ref=f1e889]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-23 23:48:26" [ref=f1e890]
+                - cell [ref=f1e891]:
+                  - button "删除" [ref=f1e892] [cursor=pointer]
+              - row [ref=f1e893]:
+                - cell "353142070234185" [ref=f1e894]
+                - cell "35314207" [ref=f1e895]
+                - cell "已识别" [ref=f1e896]
+                - cell "POSITIVO" [ref=f1e898]
+                - cell "POSITIVO, POSITIVO QUANTUM GO 4G 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e899]:
+                  - text: POSITIVO, POSITIVO QUANTUM GO 4G
+                  - generic [ref=f1e900]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-23 23:48:26" [ref=f1e901]
+                - cell [ref=f1e902]:
+                  - button "删除" [ref=f1e903] [cursor=pointer]
+              - row [ref=f1e904]:
+                - cell "868537069523233" [ref=f1e905]
+                - cell "86853706" [ref=f1e906]
+                - cell "已识别" [ref=f1e907]
+                - cell "REALME" [ref=f1e909]
+                - cell "RMX3820, Realme Chongqing RMX3820 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e910]:
+                  - text: RMX3820, Realme Chongqing RMX3820
+                  - generic [ref=f1e911]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-24 13:37:41" [ref=f1e912]
+                - cell [ref=f1e913]:
+                  - button "删除" [ref=f1e914] [cursor=pointer]
+              - row [ref=f1e915]:
+                - cell "490154203237518" [ref=f1e916]
+                - cell "49015420" [ref=f1e917]
+                - cell "已识别" [ref=f1e918]
+                - cell "Nokia" [ref=f1e920]
+                - cell "Nokia 3110 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e921]:
+                  - text: Nokia 3110
+                  - generic [ref=f1e922]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-24 16:40:29" [ref=f1e923]
+                - cell [ref=f1e924]:
+                  - button "删除" [ref=f1e925] [cursor=pointer]
+              - row [ref=f1e926]:
+                - cell "490154203237519" [ref=f1e927]
+                - cell "49015420" [ref=f1e928]
+                - cell "IMEI 无效" [ref=f1e929]
+                - cell "—" [ref=f1e931]
+                - cell "— 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e932]:
+                  - text: —
+                  - generic [ref=f1e933]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-24 16:40:29" [ref=f1e934]
+                - cell [ref=f1e935]:
+                  - button "删除" [ref=f1e936] [cursor=pointer]
+              - row [ref=f1e937]:
+                - cell "123" [ref=f1e938]
+                - cell "—" [ref=f1e939]
+                - cell "IMEI 无效" [ref=f1e940]
+                - cell "—" [ref=f1e942]
+                - cell "— 来源：MoazEb/tac_full.csv · 类型：数据源未提供" [ref=f1e943]:
+                  - text: —
+                  - generic [ref=f1e944]: 来源：MoazEb/tac_full.csv · 类型：数据源未提供
+                - cell "2026-09-24 16:40:29" [ref=f1e945]
+                - cell [ref=f1e946]:
+                  - button "删除" [ref=f1e947] [cursor=pointer]
+        - generic [ref=f1e948]:
+          - complementary [ref=f1e949]:
+            - generic [ref=f1e950]:
+              - text: VoCat 设备
+              - generic [ref=f1e951]: 6 台
+            - searchbox "搜索 VoCat 设备或 IMEI" [ref=f1e952]
+            - generic [ref=f1e953]:
+              - button "1 在线 未读取 1 · 就绪 0/0" [ref=f1e954] [cursor=pointer]:
+                - generic [ref=f1e955]:
+                  - generic [ref=f1e956]: "1"
+                  - generic [ref=f1e957]: 在线
+                - generic [ref=f1e958]: 未读取
+                - generic [ref=f1e959]: 1 · 就绪 0/0
+              - button "2 离线 未读取 2 · 就绪 0/0" [ref=f1e960] [cursor=pointer]:
+                - generic [ref=f1e961]:
+                  - generic [ref=f1e962]: "2"
+                  - generic [ref=f1e963]: 离线
+                - generic [ref=f1e964]: 未读取
+                - generic [ref=f1e965]: 2 · 就绪 0/0
+              - button "3 在线 353142076288995 3 · 就绪 20/20" [ref=f1e966] [cursor=pointer]:
+                - generic [ref=f1e967]:
+                  - generic [ref=f1e968]: "3"
+                  - generic [ref=f1e969]: 在线
+                - generic [ref=f1e970]: "353142076288995"
+                - generic [ref=f1e971]: 3 · 就绪 20/20
+              - button "dd 在线 未读取 dd · 就绪 0/1" [ref=f1e972] [cursor=pointer]:
+                - generic [ref=f1e973]:
+                  - generic [ref=f1e974]: dd
+                  - generic [ref=f1e975]: 在线
+                - generic [ref=f1e976]: 未读取
+                - generic [ref=f1e977]: dd · 就绪 0/1
+              - button "IMEI-test-0145 在线 353142070965663 IMEI-test-0145 · 就绪 0/1" [ref=f1e978] [cursor=pointer]:
+                - generic [ref=f1e979]:
+                  - generic [ref=f1e980]: IMEI-test-0145
+                  - generic [ref=f1e981]: 在线
+                - generic [ref=f1e982]: "353142070965663"
+                - generic [ref=f1e983]: IMEI-test-0145 · 就绪 0/1
+              - button "IMEI-test-3814 在线 353142070234185 IMEI-test-3814 · 就绪 2/2" [ref=f1e984] [cursor=pointer]:
+                - generic [ref=f1e985]:
+                  - generic [ref=f1e986]: IMEI-test-3814
+                  - generic [ref=f1e987]: 在线
+                - generic [ref=f1e988]: "353142070234185"
+                - generic [ref=f1e989]: IMEI-test-3814 · 就绪 2/2
+          - generic [ref=f1e990]:
+            - generic [ref=f1e991]:
+              - generic [ref=f1e992]:
+                - text: VoCat 设备信息
+                - generic [ref=f1e993]: 最近缓存
+                - generic [ref=f1e994]: 在线
+              - generic [ref=f1e996]:
+                - generic [ref=f1e997]:
+                  - generic [ref=f1e998]: 设备名称
+                  - generic [ref=f1e999]: "1"
+                - generic [ref=f1e1000]:
+                  - generic [ref=f1e1001]: device_id
+                  - generic [ref=f1e1002]: "1"
+                - generic [ref=f1e1003]:
+                  - generic [ref=f1e1004]: 完整 IMEI
+                  - generic [ref=f1e1005]: 未读取
+                - generic [ref=f1e1006]:
+                  - generic [ref=f1e1007]: IMEI 来源
+                  - generic [ref=f1e1008]: VoCat 设备快照
+                - generic [ref=f1e1009]:
+                  - generic [ref=f1e1010]: 在线状态
+                  - generic [ref=f1e1011]: 在线
+                - generic [ref=f1e1012]:
+                  - generic [ref=f1e1013]: 号池
+                  - generic [ref=f1e1014]: "1"
+              - generic [ref=f1e1015]:
+                - generic [ref=f1e1016]:
+                  - generic [ref=f1e1017]: 配置档案
+                  - generic [ref=f1e1018]: "13"
+                - generic [ref=f1e1019]:
+                  - generic [ref=f1e1020]: 号码总数
+                  - generic [ref=f1e1021]: "0"
+                - generic [ref=f1e1022]:
+                  - generic [ref=f1e1023]: 就绪号码
+                  - generic [ref=f1e1024]: "0"
+                - generic [ref=f1e1025]:
+                  - generic [ref=f1e1026]: 设备状态
+                  - generic [ref=f1e1027]: 多号码未启用
+              - link "去该号池测试" [ref=f1e1029] [cursor=pointer]:
+                - /url: "#/run"
+            - generic [ref=f1e1032]:
+              - generic [ref=f1e1033]:
+                - text: 型号识别结果
+                - generic [ref=f1e1034]: 完整 IMEI → TAC（前 8 位）→ 本地 IMEI 数据源
+              - generic [ref=f1e1035]:
+                - generic [ref=f1e1036]: 未提供 IMEI
+                - generic [ref=f1e1037]: VoCat 未读取到完整 IMEI
+              - generic [ref=f1e1038]:
+                - generic [ref=f1e1039]:
+                  - generic [ref=f1e1040]: TAC
+                  - generic [ref=f1e1041]: —
+                - generic [ref=f1e1042]:
+                  - generic [ref=f1e1043]: 厂商
+                  - generic [ref=f1e1044]: —
+                - generic [ref=f1e1045]:
+                  - generic [ref=f1e1046]: 型号
+                  - generic [ref=f1e1047]: —
+                - generic [ref=f1e1048]:
+                  - generic [ref=f1e1049]: 设备类型
+                  - generic [ref=f1e1050]: —
+              - generic [ref=f1e1051]: 型号结果用于设备身份核对，不代表 USB 物理位置或短信能力。
+  - generic [ref=f1e1052]: 已保存 3 条 IMEI 记录

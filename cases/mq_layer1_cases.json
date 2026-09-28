@@ -1,0 +1,888 @@
+{
+ "schema_version": 1,
+ "source": "C:\\Users\\27792\\Desktop\\wiki\\24-MQ接口测试清单.md",
+ "rules": [
+  "expect 只写判据，不写 ID/时间",
+  "depends_on 必须为空；需要原任务的用例在内部自建",
+  "目标按 (device, slot, iccid) 排序确定性选取",
+  "所有 target 带 binding_version=1"
+ ],
+ "cases": [
+  {
+   "id": "node.describe/success",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "single",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "result.capabilities_count": 14
+   },
+   "params": {},
+   "observe": {
+    "result.capabilities_count": "len:result.capabilities"
+   }
+  },
+  {
+   "id": "inventory.get/success",
+   "layer": 1,
+   "action": "inventory.get",
+   "procedure": "paginate",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "complete_last": true
+   },
+   "params": {
+    "page_size": 100
+   }
+  },
+  {
+   "id": "phones.list/success",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "complete_last": true,
+    "sources": [
+     "hardware"
+    ]
+   },
+   "params": {
+    "page_size": 100
+   }
+  },
+  {
+   "id": "phones.check/success",
+   "layer": 1,
+   "action": "phones.check",
+   "procedure": "single",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "has_phone_row"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "result.available": true,
+    "result.tunnel_state": "registered"
+   },
+   "params": {},
+   "target": {
+    "device": "$row.device",
+    "slot": "$row.slot",
+    "binding_version": 1,
+    "phone": "$row.phone"
+   },
+   "observe": {
+    "result.available": "result.available",
+    "result.tunnel_state": "result.tunnel_state"
+   }
+  },
+  {
+   "id": "slot.refresh/success",
+   "layer": 1,
+   "action": "slot.refresh",
+   "procedure": "single",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "has_phone_row"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "result.slot.state": "ready",
+    "result.slot.profiles_complete": true,
+    "result.source": "hardware"
+   },
+   "params": {},
+   "target": {
+    "device": "$slot.device",
+    "slot": "$slot.slot",
+    "binding_version": 1
+   },
+   "foreach": "slots",
+   "timeout_s": 90,
+   "observe": {
+    "result.slot.state": "result.slot.state",
+    "result.slot.profiles_complete": "result.slot.profiles_complete",
+    "result.source": "result.source"
+   },
+   "notes": "读卡失败时节点不得以 registry 数据回报 succeeded（清单 T-47：失败不回退历史数据）"
+  },
+  {
+   "id": "esim.profiles.list/success",
+   "layer": 1,
+   "action": "esim.profiles.list",
+   "procedure": "single",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "has_phone_row"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "result.complete": true,
+    "result.source": "hardware"
+   },
+   "params": {},
+   "target": {
+    "device": "$slot.device",
+    "slot": "$slot.slot",
+    "binding_version": 1
+   },
+   "foreach": "slots",
+   "timeout_s": 90,
+   "observe": {
+    "result.complete": "result.complete",
+    "result.source": "result.source"
+   },
+   "notes": "读卡失败时节点不得以 registry 数据回报 succeeded（清单 T-47：失败不回退历史数据）"
+  },
+  {
+   "id": "task.get/success",
+   "layer": 1,
+   "action": "task.get",
+   "procedure": "task_get",
+   "path": "success",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "inner_id_matches": true,
+    "inner_state": "succeeded"
+   },
+   "origin": {
+    "action": "node.describe",
+    "params": {}
+   }
+  },
+  {
+   "id": "T-01",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "replay",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "origin_state": "succeeded",
+    "replay_received": true,
+    "new_execution": false,
+    "seq_grew": false
+   },
+   "origin": {
+    "action": "node.describe",
+    "params": {},
+    "expires_offset_s": 120
+   },
+   "window_s": 8,
+   "notes": "同 ID 同内容重投：只回放终态，不重新执行"
+  },
+  {
+   "id": "T-02",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "conflict",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "origin_state": "succeeded",
+    "alarm_code": "IDEMPOTENCY_CONFLICT",
+    "origin_polluted": false
+   },
+   "origin": {
+    "action": "node.describe",
+    "params": {},
+    "expires_offset_s": 120
+   },
+   "mutate": {
+    "expires_at_shift_s": 3600
+   },
+   "window_s": 8
+  },
+  {
+   "id": "T-03",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "conflict",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "origin_state": "succeeded",
+    "alarm_code": "IDEMPOTENCY_CONFLICT",
+    "origin_polluted": false
+   },
+   "origin": {
+    "action": "phones.list",
+    "params": {
+     "page_size": 100
+    },
+    "expires_offset_s": 120
+   },
+   "mutate": {
+    "params": {
+     "page_size": 50
+    }
+   },
+   "window_s": 8,
+   "notes": "原任务在用例内自建（不再借用 T-39 的查询）"
+  },
+  {
+   "id": "T-04",
+   "layer": 1,
+   "action": "task.get",
+   "procedure": "task_get",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "succeeded",
+    "inner_id_matches": true,
+    "inner_state": "succeeded"
+   },
+   "origin": {
+    "action": "node.describe",
+    "params": {}
+   }
+  },
+  {
+   "id": "T-05",
+   "layer": 1,
+   "action": "task.get",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "error.code": "TASK_NOT_FOUND",
+    "error.certainty": [
+     "not_started",
+     "known_failed"
+    ]
+   },
+   "params": {
+    "id": "$new_uuid"
+   },
+   "timeout_s": 30,
+   "notes": "协议错误码表写 failed，实现回 rejected（F-5）；判据只看错误码"
+  },
+  {
+   "id": "T-16#describe",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {},
+   "omit_expires": true,
+   "timeout_s": 30
+  },
+  {
+   "id": "T-16#phones",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_size": 1
+   },
+   "omit_expires": true,
+   "timeout_s": 30
+  },
+  {
+   "id": "T-17",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected"
+   },
+   "params": {},
+   "expires_offset_s": 0,
+   "timeout_s": 30
+  },
+  {
+   "id": "T-18",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": [
+     "rejected",
+     "expired"
+    ],
+    "error.code": "COMMAND_EXPIRED",
+    "error.certainty": "not_started",
+    "result.present": false
+   },
+   "params": {
+    "page_size": 1
+   },
+   "time_offset_s": -600,
+   "expires_offset_s": 300,
+   "timeout_s": 30
+  },
+  {
+   "id": "T-37",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "environmental",
+   "preconditions": [
+    "node_online",
+    "has_empty_slot"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "empty_rows_format_ok": true
+   },
+   "params": {
+    "page_size": 100
+   },
+   "notes": "需要现场有空槽"
+  },
+  {
+   "id": "T-39",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "env_probe_ok"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "empty_rows": 0,
+    "row_count_matches_env": true
+   },
+   "params": {
+    "page_size": 100,
+    "include_empty_slots": false
+   }
+  },
+  {
+   "id": "T-40",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "page_switch",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "multi_page"
+   ],
+   "depends_on": [],
+   "expect": {
+    "page1_state": "succeeded",
+    "state": "rejected"
+   },
+   "params": {
+    "page_size": 10
+   },
+   "page2_params": {
+    "include_empty_slots": false
+   },
+   "notes": "实现用 CURSOR_EXPIRED 表示选项不一致（F-5）；判据只要求拒绝"
+  },
+  {
+   "id": "T-42",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "environmental",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "availability_consistent": true
+   },
+   "params": {
+    "page_size": 100
+   },
+   "verdict_cap": "partial",
+   "notes": "只验字段自洽；四项门槛需节点内部状态"
+  },
+  {
+   "id": "T-43",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "cursor_expiry",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "multi_page"
+   ],
+   "depends_on": [],
+   "expect": {
+    "page1_state": "succeeded",
+    "error.code": "CURSOR_EXPIRED"
+   },
+   "params": {
+    "page_size": 10
+   },
+   "wait_s": 310,
+   "optional_flag": "include_t43"
+  },
+  {
+   "id": "T-44",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "multi_page"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "mid_pages_ok": true,
+    "complete_last": true
+   },
+   "params": {
+    "page_size": 10
+   }
+  },
+  {
+   "id": "T-45",
+   "layer": 1,
+   "action": "inventory.get",
+   "procedure": "inventory_vs_phones",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "inventory_ok": true,
+    "phones_ok": true,
+    "missing": 0,
+    "extra": 0
+   }
+  },
+  {
+   "id": "T-46",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "environmental",
+   "preconditions": [
+    "node_online",
+    "multi_page"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "complete_last": true
+   },
+   "params": {
+    "page_size": 10
+   },
+   "observe_extra": [
+    "double_count"
+   ],
+   "notes": "记录“各页去重相加 − 全量去重”的差值，判据是两种口径必须区分"
+  },
+  {
+   "id": "T-47#source",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "sources": [
+     "hardware"
+    ]
+   },
+   "params": {
+    "page_size": 10
+   }
+  },
+  {
+   "id": "T-47#mode",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_size": 10,
+    "mode": "cache"
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-48",
+   "layer": 1,
+   "action": "inventory.get",
+   "procedure": "paginate",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "all_succeeded": true,
+    "sources": [
+     "registry"
+    ],
+    "profiles_complete_values": [
+     false
+    ]
+   },
+   "params": {
+    "page_size": 100
+   },
+   "notes": "清单记载的已知实现差异，不作 bug 报"
+  },
+  {
+   "id": "T-50",
+   "layer": 1,
+   "action": "phones.check",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "has_phone_row"
+   ],
+   "depends_on": [],
+   "expect": {
+    "error.code": "PHONE_NOT_FOUND"
+   },
+   "params": {},
+   "target": {
+    "device": "$row.device",
+    "slot": "$row.slot",
+    "binding_version": 1,
+    "phone": "+10000000000"
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-51",
+   "layer": 1,
+   "action": "phones.check",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "environmental",
+   "preconditions": [
+    "node_online",
+    "has_dup_phone"
+   ],
+   "depends_on": [],
+   "expect": {
+    "error.code": "PHONE_AMBIGUOUS"
+   },
+   "params": {},
+   "target": {
+    "device": "$row.device",
+    "slot": "$row.slot",
+    "binding_version": 1,
+    "phone": "$dup.phone"
+   },
+   "timeout_s": 30,
+   "notes": "需要一号对应多个 Profile"
+  },
+  {
+   "id": "T-52",
+   "layer": 1,
+   "action": "phones.check",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online",
+    "has_same_slot_pair"
+   ],
+   "depends_on": [],
+   "expect": {
+    "error.code": "TARGET_MISMATCH"
+   },
+   "params": {},
+   "target": {
+    "device": "$row.device",
+    "slot": "$row.slot",
+    "binding_version": 1,
+    "phone": "$row.phone",
+    "iccid": "$other.iccid"
+   },
+   "timeout_s": 30,
+   "notes": "同槽号码配另一 Profile 的 ICCID"
+  },
+  {
+   "id": "T-55",
+   "layer": 1,
+   "action": "foo.bar",
+   "procedure": "single",
+   "path": "none",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "UNSUPPORTED_ACTION"
+   },
+   "params": {},
+   "timeout_s": 30
+  },
+  {
+   "id": "T-27",
+   "layer": 1,
+   "action": "sms.list",
+   "procedure": "single",
+   "path": "none",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "UNSUPPORTED_ACTION"
+   },
+   "params": {},
+   "timeout_s": 30,
+   "notes": "第二层编号，但只读"
+  },
+  {
+   "id": "T-56#abc",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_size": "abc"
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-56#zero",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_size": 0
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-56#101",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_size": 101
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-56#typo",
+   "layer": 1,
+   "action": "phones.list",
+   "procedure": "single",
+   "path": "reject",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "state": "rejected",
+    "error.code": "INVALID_ARGUMENT"
+   },
+   "params": {
+    "page_sise": 10
+   },
+   "timeout_s": 30
+  },
+  {
+   "id": "T-21",
+   "layer": 1,
+   "action": "node.describe",
+   "procedure": "replay",
+   "path": "boundary",
+   "stability": "deterministic",
+   "preconditions": [
+    "node_online"
+   ],
+   "depends_on": [],
+   "expect": {
+    "origin_state": "succeeded",
+    "replay_received": true,
+    "replay_states": [
+     "succeeded"
+    ]
+   },
+   "origin": {
+    "action": "node.describe",
+    "params": {},
+    "expires_offset_s": 15
+   },
+   "replay_after_expiry": true,
+   "window_s": 8
+  },
+  {
+   "id": "T-57",
+   "layer": 1,
+   "action": "*",
+   "procedure": "certainty_audit",
+   "path": "none",
+   "stability": "deterministic",
+   "preconditions": [],
+   "depends_on": [],
+   "expect": {
+    "error_replies_present": true,
+    "all_certainty_valid": true
+   },
+   "notes": "只审计本批次自有 task_id 的错误回包，按“是否全部合法”判定，不比条数"
+  },
+  {
+   "id": "T-64",
+   "layer": 1,
+   "action": "*",
+   "procedure": "heartbeat",
+   "path": "none",
+   "stability": "deterministic",
+   "preconditions": [],
+   "depends_on": [],
+   "expect": {
+    "intervals_ok": true,
+    "presence_online": true
+   },
+   "verdict_cap": "partial",
+   "notes": "心跳间隔 30 s ± 3 s、presence retained online；90 s stale 判定属业务端"
+  }
+ ]
+}

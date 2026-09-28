@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>号码互发成功率</title>
+<style>
+:root{
+  --bg:#f3f5f9; --panel:#ffffff; --ink:#172033; --ink2:#4b5568; --muted:#8a94a6; --line:#e6e9ef;
+  --brand:#3563e9; --brand-soft:#e8eefe;
+  --ok:#12a150; --ok-soft:#e3f6ea; --bad:#d64545; --bad-soft:#fbe8e8; --warn:#c7811a; --warn-soft:#fdf1dc;
+  --idle-soft:#eef0f4; --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.06);
+  --bubble-out:#eef3ff; --bubble-in:#ecf8f1;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1218; --panel:#171b23; --ink:#e8ecf3; --ink2:#b6bfcd; --muted:#7f8a9c; --line:#262c37;
+  --brand:#7c9cff; --brand-soft:#1c2540;
+  --ok:#3fd07f; --ok-soft:#12291d; --bad:#ff7070; --bad-soft:#331a1c; --warn:#f0b04a; --warn-soft:#33270f;
+  --idle-soft:#20252f; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --bubble-out:#1b2440; --bubble-in:#132a1f;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 64px}
+/* 顶部 */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 20px;margin-bottom:18px}
+.title h1{margin:0;font-size:24px;letter-spacing:.2px}
+.title p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--idle-soft);color:var(--ink2)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.run{background:var(--brand-soft);color:var(--brand)} .chip.run .dot{animation:pulse 1.2s infinite}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+@keyframes pulse{50%{opacity:.25}}
+.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink2);border-radius:8px;padding:5px 12px;cursor:pointer}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.meta{color:var(--muted);font-size:12.5px}
+/* 进度 */
+.progress{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px}
+.bar{flex:1;height:8px;background:var(--idle-soft);border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),#5b8cff);border-radius:999px;transition:width .5s}
+.progress .txt{font-size:13px;color:var(--ink2);min-width:150px;text-align:right}
+/* 指标 */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0}
+@media (max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;min-height:108px}
+.kpi .lbl{color:var(--muted);font-size:12.5px;margin-bottom:2px}
+.kpi .num{font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1.15}
+.kpi .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.ring{flex:none}
+.ring circle{fill:none;stroke-width:8}
+.ring .bg{stroke:var(--idle-soft)} .ring .fg{stroke-linecap:round;transition:stroke-dashoffset .6s}
+.ring text{font-size:15px;font-weight:700;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+/* 面板 */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-top:16px;overflow:hidden}
+.panel-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.panel-h h2{margin:0;font-size:15px}
+.panel-h .meta{margin-left:auto}
+/* 短信卡片 */
+.msgs{padding:6px 10px 10px}
+.msg{display:grid;grid-template-columns:40px 1fr 150px;gap:12px;align-items:start;padding:14px 8px;border-bottom:1px dashed var(--line)}
+.msg:last-child{border-bottom:none}
+.seq{width:32px;height:32px;border-radius:9px;background:var(--idle-soft);color:var(--ink2);display:grid;place-items:center;font-weight:700;font-size:12.5px}
+.route{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600;font-size:14px}
+.route .arrow{color:var(--muted);font-weight:400}
+.route .dev{font-weight:400;color:var(--muted);font-size:12px}
+.bubbles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+@media (max-width:720px){.bubbles{grid-template-columns:1fr}.msg{grid-template-columns:32px 1fr}.msg .side{grid-column:2;text-align:left!important}}
+.bubble{border-radius:10px;padding:8px 12px;font-size:13.5px;word-break:break-all}
+.bubble .who{font-size:11.5px;color:var(--muted);margin-bottom:2px}
+.bubble.out{background:var(--bubble-out)}
+.bubble.in{background:var(--bubble-in)}
+.bubble.empty{background:var(--idle-soft);color:var(--muted)}
+.bubble.dim{background:var(--idle-soft);color:var(--muted)}
+details.more{padding:4px 8px 8px}
+details.more summary{cursor:pointer;list-style:none;padding:12px 10px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13px}
+details.more summary::-webkit-details-marker{display:none}
+details.more[open] summary{margin-bottom:4px}
+.side{text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.side .lat{font-size:12.5px;color:var(--muted)}
+.match{font-size:12px;font-weight:600}
+.match.ok{color:var(--ok)} .match.bad{color:var(--bad)}
+/* 表格 */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-weight:600;color:var(--muted);font-size:12.5px;text-align:left;padding:10px 18px;background:transparent;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px 18px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.click{cursor:pointer} .tbl tr.click:hover td{background:var(--idle-soft)}
+.tbl tr.sel td{background:var(--brand-soft)}
+.mini{display:flex;align-items:center;gap:10px}
+.mini .b{width:90px;height:6px;border-radius:999px;background:var(--idle-soft);overflow:hidden}
+.mini .b i{display:block;height:100%;border-radius:999px}
+.ok-t{color:var(--ok)} .bad-t{color:var(--bad)} .warn-t{color:var(--warn)}
+.scroll{overflow-x:auto}
+.empty-state{padding:28px 18px;text-align:center;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="title">
+      <h1>号码互发成功率</h1>
+      <p>VoCat 号池 · 真实短信互发 · 每 2 秒自动刷新</p>
+    </div>
+    <div class="right">
+      <span id="batch" class="meta"></span>
+      <span id="state" class="chip"><span class="dot"></span><span id="stateTxt">等待数据</span></span>
+      <button id="backLive" class="btn" hidden>回到实时</button>
+    </div>
+  </div>
+
+  <div class="progress">
+    <div class="bar"><i id="bar"></i></div>
+    <div class="txt" id="progressText">—</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div><div class="lbl">发送条数</div><div class="num" id="k-total">–</div><div class="sub" id="k-total-s">&nbsp;</div></div></div>
+    <div class="kpi"><svg class="ring" id="r-send" width="76" height="76" viewBox="0 0 76 76"></svg>
+      <div><div class="lbl">发送成功率</div><div class="sub" id="k-send-s">&nbsp;</div></div></div>
+    <div class="kpi"><svg class="ring" id="r-arr" width="76" height="76" viewBox="0 0 76 76"></svg>
+      <div><div class="lbl">到达率</div><div class="sub" id="k-arr-s">&nbsp;</div></div></div>
+    <div class="kpi"><div><div class="lbl">平均到达用时</div><div class="num" id="k-lat">–</div><div class="sub">从发出到对方收到</div></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h2>短信明细</h2><span class="meta">左边是发出的内容，右边是接收方实际收到的内容</span></div>
+    <div class="msgs" id="msgs"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-h"><h2>每个号码</h2></div>
+      <div class="scroll"><table class="tbl">
+        <thead><tr><th>号码</th><th>设备</th><th>发送成功率</th><th>接收成功率</th></tr></thead>
+        <tbody id="numbers"></tbody></table></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>历史批次</h2><span class="meta">点一行查看</span></div>
+      <div class="scroll"><table class="tbl">
+        <thead><tr><th>批次</th><th>时间</th><th>条数</th><th>发送</th><th>到达</th></tr></thead>
+        <tbody id="history"></tbody></table></div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tone = (r) => r >= 95 ? 'ok' : (r >= 80 ? 'warn' : 'bad');
+const toneColor = (r) => `var(--${tone(r)})`;
+const STATUS = {queued:['待发送',''], sending:['发送中','run'], sent:['已发出，等待到达','run'],
+  arrived:['已到达','ok'], lost:['未到达','bad'], failed:['发送失败','bad'], throttled:['被限流，未发送','warn']};
+let viewing = null;
+
+function ring(el, rate, has) {
+  const r = 30, c = 2 * Math.PI * r, v = has ? rate : 0;
+  el.innerHTML = `<circle class="bg" cx="38" cy="38" r="${r}"/>
+    <circle class="fg" cx="38" cy="38" r="${r}" stroke="${has ? toneColor(rate) : 'var(--idle-soft)'}"
+      stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - v / 100)}" transform="rotate(-90 38 38)"/>
+    <text x="38" y="38">${has ? rate + '%' : '–'}</text>`;
+}
+function statusOf(m) {
+  return m.status || (m.send_http === 429 ? 'throttled' : (m.arrived ? 'arrived' : (m.sent_ok ? 'lost' : 'failed')));
+}
+function mini(rate, has) {
+  if (!has) return '<span class="meta">未测</span>';
+  return `<div class="mini"><span class="${tone(rate)}-t" style="font-weight:700;min-width:48px">${rate}%</span>
+    <span class="b"><i style="width:${rate}%;background:${toneColor(rate)}"></i></span></div>`;
+}
+
+function render(d, isLive) {
+  const msgs = d.messages || [];
+  const o = (d.summary && d.summary.overall) || {total:0, sent_ok:0, arrived:0, send_rate:0, arrive_rate:0};
+  const planned = d.planned || msgs.length;
+  const states = {running:['测试中','run'], waiting:['等待到达','run'], done:['已完成','ok'], idle:['空闲','']};
+  const st = isLive ? (states[d.state] || states.idle) : ['历史批次','warn'];
+  $('stateTxt').textContent = st[0]; $('state').className = 'chip ' + st[1];
+  $('batch').textContent = d.batch ? `批次 ${d.batch} · ${String(d.started || '').slice(0, 19).replace('T', ' ')}` : '';
+
+  const done = msgs.filter((m) => ['arrived','lost','failed','throttled'].includes(statusOf(m))).length;
+  $('bar').style.width = planned ? (100 * done / planned) + '%' : '0';
+  $('progressText').textContent = planned ? `已处理 ${done} / ${planned} 条` : '还没有测试数据';
+
+  $('k-total').textContent = o.total || (planned ? 0 : '–');
+  $('k-total-s').textContent = o.throttled ? `另有 ${o.throttled} 条被限流未发` : (planned ? `计划 ${planned} 条` : '');
+  ring($('r-send'), o.send_rate, o.total > 0);
+  ring($('r-arr'), o.arrive_rate, o.total > 0);
+  $('k-send-s').textContent = o.total ? `${o.sent_ok} / ${o.total} 条发送成功` : '';
+  $('k-arr-s').textContent = o.total ? `${o.arrived} / ${o.total} 条已到达` : '';
+  $('k-lat').textContent = o.avg_latency_s == null ? '–' : o.avg_latency_s + ' 秒';
+
+  const card = (m) => {
+    const s = statusOf(m), lab = STATUS[s] || [s, ''];
+    const sent = m.sent_text || (m.token ? m.token + ' 号池互发测试' : '');
+    const got = m.received_text;
+    const throttled = s === 'throttled';
+    const matchHtml = got == null ? '' : (got === sent ? '<span class="match ok">✓ 内容一致</span>' : '<span class="match bad">✕ 内容不一致</span>');
+    const outBubble = throttled
+      ? `<div class="bubble dim"><div class="who">${esc(m.sender)} 计划发出（未发送）</div>${esc(sent)}</div>`
+      : `<div class="bubble out"><div class="who">${esc(m.sender)} 发出</div>${esc(sent)}</div>`;
+    const recvBubble = got != null
+      ? `<div class="bubble in"><div class="who">${esc(m.received_by || m.receiver)} 收到</div>${esc(got)}</div>`
+      : `<div class="bubble empty"><div class="who">${esc(m.receiver)}</div>${throttled ? '未发送' : (s === 'arrived' ? '已收到（内容未记录）' : (s === 'failed' ? '发送失败' : '尚未收到'))}</div>`;
+    return `<div class="msg">
+      <div class="seq">${m.seq}</div>
+      <div>
+        <div class="route">${esc(m.sender)} <span class="dev">设备${esc(m.sender_dev)}</span>
+          <span class="arrow">→</span> ${esc(m.receiver)} <span class="dev">设备${esc(m.receiver_dev)}</span></div>
+        <div class="bubbles">${outBubble}${recvBubble}</div>
+      </div>
+      <div class="side"><span class="chip ${lab[1]}"><span class="dot"></span>${lab[0]}</span>
+        <span class="lat">${m.latency_s == null ? '' : '用时 ' + m.latency_s + ' 秒'}</span>${matchHtml}</div>
+    </div>`;
+  };
+  const shown = msgs.filter((m) => statusOf(m) !== 'throttled');
+  const hidden = msgs.filter((m) => statusOf(m) === 'throttled');
+  const wasOpen = !!document.querySelector('details.more[open]');
+  $('msgs').innerHTML = msgs.length
+    ? (shown.map(card).join('') || '<div class="empty-state">这一批没有真正发出的短信</div>')
+      + (hidden.length ? `<details class="more"${wasOpen ? ' open' : ''}><summary>另有 ${hidden.length} 条被 VoCat 限流、没有发送（不计入成功率）· 点击展开</summary>${hidden.map(card).join('')}</details>` : '')
+    : '<div class="empty-state">暂无短信记录</div>';
+
+  const rows = (d.summary && d.summary.per_number) || [];
+  $('numbers').innerHTML = rows.length ? rows.map((p) => `<tr><td>${esc(p.number)}</td><td class="meta">设备${esc(p.device)}</td>
+    <td>${mini(p.send_rate, p.sent)}</td><td>${mini(p.receive_rate, p.expected_in)}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty-state">暂无</td></tr>';
+}
+
+async function loadHistory() {
+  try {
+    const runs = await (await fetch('/api/history')).json();
+    $('history').innerHTML = runs.length ? runs.map((r) => `<tr class="click ${viewing === r.batch ? 'sel' : ''}" data-b="${esc(r.batch)}">
+      <td>${esc(r.batch)}</td><td class="meta">${esc(String(r.started || '').slice(5, 16).replace('T', ' '))}</td><td>${r.overall.total}</td>
+      <td class="${tone(r.overall.send_rate)}-t">${r.overall.total ? r.overall.send_rate + '%' : '–'}</td>
+      <td class="${tone(r.overall.arrive_rate)}-t">${r.overall.total ? r.overall.arrive_rate + '%' : '–'}</td></tr>`).join('')
+      : '<tr><td colspan="5" class="empty-state">暂无</td></tr>';
+    document.querySelectorAll('#history tr.click').forEach((tr) => tr.onclick = () => openRun(tr.dataset.b));
+  } catch (e) {}
+}
+async function openRun(batch) {
+  viewing = batch; $('backLive').hidden = false;
+  const d = await (await fetch('/api/run/' + encodeURIComponent(batch))).json();
+  render(d, false); loadHistory();
+}
+async function tick() {
+  if (viewing === null) {
+    try { render(await (await fetch('/api/live')).json(), true); }
+    catch (e) { $('progressText').textContent = '看板服务连不上'; }
+  }
+  loadHistory();
+}
+$('backLive').onclick = () => { viewing = null; $('backLive').hidden = true; tick(); };
+tick(); setInterval(tick, 2000);
+</script>
+</body>
+</html>

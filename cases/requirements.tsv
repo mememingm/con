@@ -1,0 +1,69 @@
+id	actions	category	object	phase	preconditions	procedure	not_tested_reason
+T-01	node.describe	边界条件	节点幂等	首版只读	本工具已完成的只读任务及发布原文；执行计数或节点日志可取得	逐字节重投原请求，对比原始 seq、内容及执行计数	两批查询使用不同 UUID，没有同 ID 原文重投及不重新执行证据
+T-02	node.describe	拒绝路径	节点幂等	首版只读	本工具已有任务；订阅 task/event；保留原请求和告警原文	仅修改 expires_at；关联 alarm.raised 的 details.command 与 IDEMPOTENCY_CONFLICT，并确认原任务未覆盖	未执行仅修改 expires_at 的同 ID 请求；现有探针未订阅 event
+T-03	node.describe	拒绝路径	节点幂等	首版只读	本工具已有任务；固定其余信封字段；订阅 task/event	只修改 params，关联 IDEMPOTENCY_CONFLICT 告警与原任务回放	未执行只改 params 的同 ID 请求；现有探针未订阅 event
+T-04	task.get	成功路径	节点持久状态	首版只读	本工具原任务 ID、原始状态及无重复执行的观测依据	新 UUID 查询 params.id 指向原任务，比较最新持久状态与执行记录	没有 task.get 请求或回包
+T-05	task.get	拒绝路径	节点任务查询	首版只读	新生成且确认未投递过的任务 ID	用新外层 UUID 查询不存在的 params.id	没有 TASK_NOT_FOUND 场景证据
+T-06	sms.send,esim.profile.download,task.get	边界条件	副作用重试	后续专项	已授权副作用任务及可控超时；保留完整原请求；隔离测试窗口	超时后新外层 task.get 查原任务，再按原文重投并核对无重复副作用	没有已授权副作用超时场景；不能改新 ID 重发
+T-07		边界条件	业务接收器与节点 ACK	ACK专项	业务 ACK 开启；仅本工具消息；持久接收器和去重库；无其他消费者提前确认	重收同键同内容消息，对比数据库写入次数与再次 ACK	探针只有内存去重，没有重收、事务去重库和节点 ACK 处理证据
+T-08		拒绝路径	event ACK	ACK专项	本工具测试事件；隔离 ACK 窗口；节点拒绝观测日志	分别提交不含 seq 与含 seq=0 的事件 ACK，核对节点接纳和拒绝	没有本工具事件或带 seq 的 event ACK；不能确认别人的事件
+T-09		边界条件	task ACK 逐序号	ACK专项	本工具生成至少 3 个 seq；ACK 开启；接收器可选择暂不确认	只确认 seq=3，观察 1、2 仍原样补传	原探针立即对 1、2、3 都发 ACK，没有只确认 3 的实验
+T-10		边界条件	业务事务与补传	ACK专项	持久接收器；可断开自己的接收连接；ACK 开启且消息归属可查	保存原文，断开后重连，对比未确认消息全部字段及事务提交时序	只有追加日志后发 ACK；无业务写入和去重同事务、断线重连证据
+T-11		边界条件	ACK 丢失恢复	ACK专项	仅本工具消息；可选择抑制自己的 ACK；节点对应 outbox 可观测	落库后丢弃一次 ACK，重收再 ACK，核对无重复业务及对应项清零	无重复接收；No matching subscribers 不是节点 outbox 清零证据
+T-12		边界条件	业务接收器	ACK专项	本工具可重放旧 seq；数据库有较新持久状态	投递旧 seq，核对保存、ACK 和最新状态没有倒退	未验证迟到 seq 及数据库最新状态
+T-13		拒绝路径	业务接收器	ACK专项	隔离测试输入；同键不同内容的真实关联测试消息	注入冲突，核对隔离记录、原状态和未发送成功 ACK	无同键异内容实验；探针支持冲突检查不算本轮验收
+T-14		边界条件	ACK 批量与无需 ACK 消息	ACK专项	自己的 task/event；可覆盖 1、100、101 项；presence/heartbeat 观测	验证 1–100 项处理与超限拒绝；检查 presence/heartbeat/ACK 无业务确认	仅观察单项 task ACK 发布，无批量边界及无需确认消息证据
+T-15		边界条件	接收器重启恢复	ACK专项	持久接收器与本工具未确认消息；只重启自己的接收器	重启接收器后比较补收、ACK、数据库去重结果	探针没有恢复账本；未执行接收器重启实验
+T-16	node.describe,task.get	拒绝路径	信封期限校验	首版只读	已确认目标环境；登记负向请求；包含两个只读 action	分别省略 expires_at 发起查询并保存拒绝回包	两批查询均携带 expires_at，未执行缺字段请求
+T-17	node.describe	拒绝路径	信封期限校验	首版只读	登记早于和等于 time 的两个只读请求	分别发送 expires_at 小于及等于 time 的请求	没有期限早于或等于 time 的请求证据
+T-18	node.describe	拒绝路径	入口过期	首版只读	时钟偏差已核实；过期时间仍晚于命令 time；能证明未执行	发送已过期请求，核对拒绝或 expired 及执行日志	未发已过期请求；两端时钟同步未核实
+T-19	phones.list	边界条件	出队过期	隔离故障专项	隔离节点硬件查询与可控队列；记录入队及出队时刻；故障范围授权	制造入队时有效、访问硬件前过期，核对 COMMAND_EXPIRED 及未执行；不使用不占卡通道的 describe 冒充排队	没有可控排队和二次过期检查实验
+T-20	phones.list	边界条件	执行中超期	隔离故障专项	隔离节点可控慢硬件查询；开始执行时仍有效；观测时间线	让已经开始的硬件查询跨过期限，观察没有被强制中断	没有可控执行耗时及跨期限运行证据
+T-21	node.describe	边界条件	已完成任务重投	首版只读	本工具完整已完成请求；等待其原 expires_at 过去	原文重投，比较旧终态不被改写为 expired	未在原期限后重投已完成任务
+T-22	sms.send	成功路径	短信通道提交	短信专项	授权号码、对端、条数和费用；现场合法 target；持久接收器	发送唯一测试文本，核对 succeeded 和 result=null，仅记录提交受理	未授权并执行本轮真实短信发送
+T-23	sms.send	边界条件	短信送达事件	短信专项	本工具发送任务及可取得的真实 delivery 事件	关联新事件 ID、data.command 与实际 delivery_state	没有本轮 sms.delivery 事件和原发送任务
+T-24		边界条件	短信接收归属	短信专项	本工具测试短信；接收隧道 ICCID 映射；必要时隔离卡状态	核对接收隧道归属和 phone 未知时为 null	没有本轮接收事件或隧道归属观测
+T-25	sms.send	成功路径	双向真实收发	短信专项	两端可配合且有授权；唯一正文；两侧原始收件证据	双向各发一条，逐条匹配正文、ICCID 与双端时间	没有本轮双向短信及两侧实收证据
+T-26		边界条件	短信事件补传	短信与ACK专项	本工具接收事件；ACK 开启；可控重复投递	比较事件 ID、原时间及内容，验证按键而非正文去重	没有 sms.received 补传和事件去重证据
+T-27	sms.list	拒绝路径	不支持的历史短信接口	首版只读	确认目标及负向 action；只发无硬件副作用请求	发送 sms.list，核对 UNSUPPORTED_ACTION	未发送 sms.list；该 action 不属于14行矩阵，结果应仅记 T 明细
+T-28	esim.profile.download	成功路径	首次写卡自动开线	写卡专项	可支配空 eUICC；slot.refresh 现场确认；激活码额度和写卡授权	首次写入，核对 written、sms_ready、tunnel_state，全程不调用 ensure	未取得本轮空槽、激活码和写卡授权；没有写卡证据
+T-29	esim.profile.download	边界条件	第二 Profile 增量开线	写卡与短信专项	同卡已有在线 Profile；第二激活码；旧线实收配合；授权窗口	下载第二 Profile，记录旧线路身份与连续性，写入期间旧号实收	缺第二 Profile 写卡与旧号实收场景授权和证据
+T-30	esim.profile.download	边界条件	已写卡但开线失败	隔离写卡故障专项	隔离测试 eUICC；授权可控开线失败；后台重试日志	制造明确开线失败，核对及时返回、written=true、ICCID、tunnel_error 和独立重试	未制造已写入但开线失败场景；不能消耗激活码探测
+T-31	esim.profile.download	边界条件	业务端写卡决策	平台专项	真实 failed 且 written=true 的本轮任务；业务端日志与下发账本	核对业务端先看 written，不因 failed 自动重新下载	无业务端处理日志；本地判断代码不能代替平台验收
+T-32	esim.profile.download	边界条件	两种 uncertain 与恢复	隔离写卡故障专项	可控配置接纳失败及超时未就绪；卡片与配置前后快照	分别验证两类错误的配置回滚或保存、Profile 保留和禁止自动重下	缺两类 uncertain 的隔离场景及配置、卡片证据
+T-33	esim.profile.download	拒绝路径	下载错误分类	写卡拒绝专项	专用测试资源；可分别复现各上游拒绝；原始上游回包	逐项对照六类错误映射；只有 Refused 时不得推断激活码已使用	没有下载拒绝真实回包；完整分类需要多个独立场景
+T-34	esim.profile.download	边界条件	Profile 状态与线路状态	写卡专项	已授权写卡；下载回读和多隧道状态可独立观测	分别核对 profile_state 与 sms_ready/tunnel_state 的业务含义	没有本轮下载回读和线路状态对照证据
+T-35	esim.profile.download	边界条件	下载幂等	写卡专项	本工具已授权下载原文；卡片与额度前后证据	同 ID 原文重投，验证回放且未再次写入或消费额度	没有本轮下载原任务及不重复消费的证据
+T-36	tunnel.ensure	成功路径	补开与增量开线	隧道专项	卡上目标 ICCID；首次、增量、已就绪及单线转组场景；授权	分场景 ensure；已就绪 changed=false；原在线线路保持连续	缺合法目标、隧道变更授权及各分支真实证据
+T-37	phones.list	成功路径	默认空卡行	首版只读	当前存在 slot.refresh 确认的干净空槽；完整分页	省略 include_empty_slots，核对空卡字段及真实 IMEI	没有 phones.list 和现场空槽证据
+T-38	phones.list	边界条件	PingCode 入库	平台专项	本轮含空卡行清单；平台访问和入库、拒绝日志	检查整批拒收、单行拒收或入库，并记录明确实际行为	没有 PingCode 本轮处理与入库日志
+T-39	phones.list	成功路径	过滤空卡	首版只读	现场存在空卡对照；使用新查询快照完整分页	显式 include_empty_slots=false，核对仅有真实 Profile	没有显式过滤查询及对照快照
+T-40	phones.list	拒绝路径	分页选项一致性	首版只读	至少两页；保存第一页 cursor 和选项	后续页切换 include_empty_slots，核对拒绝	没有多页快照及中途切换选项的请求
+T-41	phones.list	边界条件	空卡、缺卡与读卡失败	隔离硬件专项	三种可区分状态的隔离槽位；不在公共机带电插拔	分别采集零 Profile、SIM not inserted、其他读卡失败	缺三类硬件状态及回包；历史空槽名单不能代替现场确认
+T-42	phones.list,phones.check	边界条件	号码可用性四条件	隔离线路专项	绑定、注册、通信、发送通道四项可观测；可控不满足场景	分别破坏或恢复单一条件，核对 available、reason 和 tunnel_state	没有四条件观测及负向组合；状态标志不能证明短信实收
+T-43	phones.list,inventory.get	拒绝路径	游标过期和重新采集	首版只读与平台	分页快照；等待超过5分钟或获准制造快照淘汰；业务端对账日志	提交过期 cursor，核对 CURSOR_EXPIRED 及整份丢弃重采	无游标过期请求及业务端丢弃半份快照的证据
+T-44	phones.list,inventory.get	边界条件	业务端完整性对账	平台专项	未收齐与完整快照；可读业务端资源变更账本	比较 complete=false/true 时的对账动作，确认未收齐不删资源	没有业务端对账和资源删除决策证据
+T-45	inventory.get,phones.list	成功路径	两个清单一致性	首版只读	同环境近同时完整快照；统一设备范围；时间差已记录	比较库存 IMEI 与号码 target.slot 的全量去重集合	没有 inventory.get/phones.list 本轮完整快照
+T-46	phones.list	边界条件	跨页计数	首版只读与平台	page_size=10 且有跨页重复槽位；完整同一快照	输出每页去重和、全量去重数及差集；平台计数另核对	没有 page_size=10 的完整分页；不能照搬历史21/19
+T-47	phones.list,phones.check,slot.refresh,esim.profiles.list	边界条件	现场采集和失败处理	只读与隔离故障	新 UUID 无 cursor；可观测硬件读取；mode 负向及可控读失败	验证新采集、source=hardware、拒绝 mode、读失败不用旧值	没有硬件查询、执行日志、mode 拒绝与读失败场景；inventory 已知差异另列T-48
+T-48	inventory.get	成功路径	已知库存实现差异	首版只读	当前库存请求及部署版本可追溯	核对 source=registry、profiles_complete=false、状态 unknown，并登记差异	没有本轮 inventory.get 回包；已知实现描述不是实测
+T-49	phones.list	拒绝路径	身份待确认	隔离启动专项	隔离节点启动窗口；IMEI 未解析；授权服务操作	在身份未确认窗口查询并核对 IDENTITY_PENDING	没有隔离启动窗口；不能重启公共服务制造前提
+T-50	phones.check	拒绝路径	手机号寻址	首版只读	完整号码清单；确认不存在的测试号码；禁止发送短信	用不存在的 phone 执行只读检查，核对 PHONE_NOT_FOUND	没有完整清单或不存在号码的查询
+T-51	phones.check	拒绝路径	手机号歧义	隔离数据专项	受控且真实对应多个 Profile 的 phone；来源清单	查询歧义号码并核对 PHONE_AMBIGUOUS	没有同号多 Profile 前提；不得凭空捏造实机映射
+T-52	phones.check	拒绝路径	目标不匹配	首版只读	现场查出的两个不匹配 phone/ICCID；其余 target 合法	只读检查提交不匹配配对，核对 TARGET_MISMATCH	没有可信 target 配对或不匹配请求
+T-53	phones.check,esim.profiles.list	边界条件	换卡后寻址	隔离换卡专项	授权隔离换卡；旧、新 IMEI 和 ICCID 原始映射	新槽查询迁移 ICCID，同时核对旧槽拒绝旧配置	没有授权换卡及前后映射证据
+T-54	esim.profile.download,esim.profile.delete,esim.profile.enable	拒绝路径	同卡操作锁	隔离并发专项	隔离 eUICC；并发写入、删除、切换、鉴权范围授权	在同卡操作重叠窗口提交另一个任务，核对 SLOT_BUSY 和无额外副作用	没有授权并发卡操作；不能拿不同卡的并发代替
+T-55	__unknown_action__	拒绝路径	不支持的 action	首版只读	预定义不存在的 action；完整合法信封	提交未知 action，核对 UNSUPPORTED_ACTION	未发送未知 action；不把未知 action 强行映射到 node.describe
+T-56	node.describe,task.get,phones.list,phones.check	拒绝路径	参数格式校验	首版只读	每种 action 登记类型和格式负向输入；固定无副作用范围	按类型与格式样本执行，核对 INVALID_ARGUMENT	没有参数类型或格式错误请求
+T-57		边界条件	跨接口错误 certainty	跨专项	本轮各错误真实回包；明确动作是否开始和实际结果	逐类核对 certainty 存在且语义正确，不能仅检查枚举	两批 describe 的 error=null；没有可核对的真实节点错误
+T-58	esim.profile.enable	边界条件	启用幂等	写卡专项	现场确认已启用的 Profile；启用动作授权	再次启用同一 Profile，核对幂等成功和卡状态	没有已启用目标与 enable 授权及回包
+T-59	esim.profile.delete	拒绝路径	在用 Profile 删除保护	隔离删卡专项	隔离机在线 Profile；已核实保护条件及删除风险授权	提交删除，核对 PROFILE_IN_USE 和 Profile 仍存在	未授权删卡请求；即使预期拒绝也不能假定绝无删卡风险
+T-60	phones.check,sms.send	边界条件	24小时 rekey	长周期短信专项	授权短信条数和持续观测；实际注册锚点；跨23–24小时窗口	持续查询及真实收码，记录可用性抖动和 uncertain 时间线	没有24小时窗口与真实收码序列；单次查询不够
+T-61	phones.check,sms.send	边界条件	8小时401重挑战	长周期短信专项	各线完整注册时刻；观测覆盖分散锚点；短信授权	跨各线8小时窗口统计收码成功率与 tunnel_state	没有各线注册锚点、8小时窗口与收码统计
+T-62		边界条件	节点重启恢复	隔离重启专项	隔离节点；明确重启授权；未确认和未过期自有任务	记录身份验证、hello、补传、库存校准和任务恢复顺序	没有节点重启窗口；禁止直接重启公共服务
+T-63		边界条件	云端seq不倒退	ACK与平台专项	本轮先到 seq=3 后到 seq=2；云端状态库及 ACK 记录	核对旧消息存档确认且最新状态不倒退	没有乱序消息与云端持久状态证据
+T-64		边界条件	presence与心跳新鲜度	隔离连接专项	presence/heartbeat 订阅；QoS/retain 元数据；可控90秒无心跳	保留 online 同时停止心跳，核对 stale 与健康判断	探针只订阅 task，没有心跳、presence 或90秒观测
+T-65		边界条件	补传退避	ACK专项	本工具未确认消息；ACK开启；可观测至少至300秒及重连窗口	记录补传间隔抖动、原文不变与重连唤醒	两批均不足一秒，未观察补传退避或重连
+T-66	node.describe	边界条件	旧任务保留回放	保留策略专项	归属明确的很旧只读任务及原请求；保留策略和版本历史	原文重投，核对旧回包保留；区分旧版已删除不可重建	没有可追溯旧任务原请求与保留期场景
+T-67		边界条件	uncertain保留	保留策略专项	本轮真实 uncertain 自有任务；跨保留期或授权隔离时钟方案	核对未自动清理和未盲目重新执行，保留状态及操作账本	没有 uncertain 任务、跨保留期证据或隔离方案
+T-68		拒绝路径	存储压力保护	隔离存储故障专项	专用测试机与磁盘配额；近满及满盘注入授权；未确认数据基线	分阶段近满与满盘，检查告警、停止副作用接收、STORAGE_FULL 和数据保留	没有隔离测试机及故障注入授权，不能在公共机填满磁盘
