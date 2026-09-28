@@ -335,8 +335,13 @@ def main():
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8765)
     args = parser.parse_args()
-    # Fail fast if credentials are missing, before serving.
-    read_credentials(CREDS)
+    # Check credentials but allow server to start without them (demo mode)
+    try:
+        read_credentials(CREDS)
+        print('✓ Credentials loaded')
+    except (FileNotFoundError, SystemExit) as e:
+        print(f'⚠ No credentials found (demo mode): {e}')
+        print('  API calls will fail, but web interface is available for testing')
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f'Pool console (read-only) on http://{args.host}:{args.port}')
     print(f'VoCat base: {BASE}   evidence: {EVIDENCE}')
@@ -344,7 +349,7 @@ def main():
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print('\nstopped')
+        print('\\nstopped')
 
 
 if __name__ == '__main__':
